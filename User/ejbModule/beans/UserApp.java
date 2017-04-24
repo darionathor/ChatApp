@@ -43,7 +43,7 @@ public class UserApp implements MessageListener {
     @POST
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON)
-    User register(String username, String password) throws UsernameExistsException {
+    public User register(String username, String password) throws UsernameExistsException {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(username)){
 				throw new UsernameExistsException();
@@ -60,7 +60,7 @@ public class UserApp implements MessageListener {
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
-    Boolean login(String username, String password) throws InvalidCredentialsException {
+    public Boolean login(String username, String password) throws InvalidCredentialsException {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(username) && us.getPassword().equals(password)){
 				return true;
@@ -72,7 +72,7 @@ public class UserApp implements MessageListener {
     @POST
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
-    Boolean logout(User logout) {
+    public Boolean logout(User logout) {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(logout.getUsername()) && us.getPassword().equals(logout.getPassword())){
 				us.setHost(null);
@@ -85,7 +85,7 @@ public class UserApp implements MessageListener {
     @GET
     @Path("/registeredUsers")
     @Produces(MediaType.APPLICATION_JSON)
-    List<User> getAllUsers() {
+    public List<User> getAllUsers() {
 		return registeredUsers;
 	}
 }
