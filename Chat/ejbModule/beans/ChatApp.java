@@ -11,11 +11,11 @@ import exceptions.AliasExistsException;
 
 /**
  * Message-Driven Bean implementation class for: ChatApp
- */
+ *//*
 @MessageDriven(
 		activationConfig = { @ActivationConfigProperty(
 				propertyName = "destinationType", propertyValue = "javax.jms.Queue")
-		})
+		})*/
 public class ChatApp implements MessageListener {
 
     /**

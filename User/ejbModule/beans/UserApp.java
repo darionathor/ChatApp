@@ -5,8 +5,17 @@ import java.util.List;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -18,11 +27,11 @@ import exceptions.UsernameExistsException;
 
 /**
  * Message-Driven Bean implementation class for: User
- */
+ *//*
 @MessageDriven(
 		activationConfig = { @ActivationConfigProperty(
 				propertyName = "destinationType", propertyValue = "javax.jms.Queue")
-		})
+		})*/
 public class UserApp implements MessageListener {
 	private ArrayList<User> registeredUsers;
     /**
