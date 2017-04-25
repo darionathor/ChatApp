@@ -1,10 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<title>Chat</title>
 </head>
 <body>
+
+<div ng-app="myApp" ng-controller="formCtrl">
+    <button ng-click="logout()">logout</button>
+  <form novalidate>
+    username:<br>
+    <input type="text" ng-model="user.username"><br>
+    password:<br>
+    <input type="text" ng-model="user.password">
+    <br><br>
+    <button ng-click="login()">login</button>
+  <p>form = {{user}}</p>
+  <p>master = {{master}}</p>
+  </form>
+  <br>
+  <form novalidate>
+    username:<br>
+    <input type="text" ng-model="user.username"><br>
+    password:<br>
+    <input type="text" ng-model="user.password">
+    <br><br>
+    <button ng-click="register()">register</button>
+  </form>
+  <br>
+  <div id="chatbox" style="width:450px; height:250px; overflow:scroll"></div>
+  <br>
+    <form novalidate>
+        <input  type="text" ng-model="message" />
+        <button ng-click="sendmessage()">send</button>
+    </form>
+</div>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('formCtrl', function($scope) {
+	$scope.message="";
+    $scope.master = {username: "aa", password: "a"};
+    $scope.login = function() {
+        $scope.user = angular.copy($scope.master);
+    };
+    $scope.register = function() {
+        $scope.user = angular.copy($scope.master);
+    };
+    $scope.sendmessage = function() {
+        var box=document.getElementById("chatbox");
+        var el= document.createElement("p");
+        el.innerHTML=$scope.message;
+        box.appendChild(el);
+        console.log($scope.message);
+    	ws.send("Message to server from client");
+    };
+    $scope.logout = function() {
+        $scope.user = angular.copy($scope.master);
+    };
+	var ws = new WebSocket("ws://localhost:8080/ChatClient/socket");
+    
+    ws.onopen = function(){  
+        console.log("Socket has been opened!");  
+    };
+    
+    ws.onmessage = function(message) {
+        listener(JSON.parse(message.data));
+    };
+    function listener(data) {
+        var messageObj = data;
+        console.log("Received data from websocket: ", messageObj);
+        // If an object exists with callback_id in our callbacks object, resolve it
+        if(callbacks.hasOwnProperty(messageObj.callback_id)) {
+          console.log(callbacks[messageObj.callback_id]);
+          $rootScope.$apply(callbacks[messageObj.callback_id].cb.resolve(messageObj.data));
+          delete callbacks[messageObj.callbackID];
+        }
+      }
+});
+</script>
 
 </body>
 </html>
