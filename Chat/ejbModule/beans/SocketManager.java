@@ -87,6 +87,24 @@ public class SocketManager {
     						e.printStackTrace();
     					}
     			}
+    		}else{
+    			ObjectMapper om= new ObjectMapper();
+    			String exit="";
+    			try {
+    				exit = om.writeValueAsString(mess);
+    			} catch (JsonProcessingException e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			}
+    			for(Session s:map.keySet()){
+    				if(map.get(s).getUsername().equals(mess.getRecipient()))
+    					try {
+    						s.getBasicRemote().sendText(exit);
+    					} catch (IOException e) {
+    						// TODO Auto-generated catch block
+    						e.printStackTrace();
+    					}
+    			}
     		}
     	}else if(mess.getType().equals("login")){
     		User us= new User();
