@@ -69,43 +69,7 @@ public class SocketManager {
     	//System.out.println(mess);
     	System.out.println(mess.getType());
     	if(mess.getType().equals("message")){
-    		if(mess.getRecipient().equals("")){
-    			ObjectMapper om= new ObjectMapper();
-    			String exit="";
-    			try {
-    				exit = om.writeValueAsString(mess);
-    			} catch (JsonProcessingException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
-    			}
-    			for(Session s:map.keySet()){
-    				if(!map.get(s).getUsername().equals(mess.getUsername()))
-    					try {
-    						s.getBasicRemote().sendText(exit);
-    					} catch (IOException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    					}
-    			}
-    		}else{
-    			ObjectMapper om= new ObjectMapper();
-    			String exit="";
-    			try {
-    				exit = om.writeValueAsString(mess);
-    			} catch (JsonProcessingException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
-    			}
-    			for(Session s:map.keySet()){
-    				if(map.get(s).getUsername().equals(mess.getRecipient()))
-    					try {
-    						s.getBasicRemote().sendText(exit);
-    					} catch (IOException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    					}
-    			}
-    		}
+    		publish(mess);
     	}else if(mess.getType().equals("login")){
     		User us= new User();
     		us.setUsername(mess.getUsername());
@@ -221,7 +185,47 @@ public class SocketManager {
 			}
     	}
     }
-    @OnOpen
+    private void publish(MessageClient mess) {
+		// TODO Auto-generated method stub
+    	if(mess.getRecipient().equals("")){
+			ObjectMapper om= new ObjectMapper();
+			String exit="";
+			try {
+				exit = om.writeValueAsString(mess);
+			} catch (JsonProcessingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			for(Session s:map.keySet()){
+				if(!map.get(s).getUsername().equals(mess.getUsername()))
+					try {
+						s.getBasicRemote().sendText(exit);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}
+		}else{
+			ObjectMapper om= new ObjectMapper();
+			String exit="";
+			try {
+				exit = om.writeValueAsString(mess);
+			} catch (JsonProcessingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			for(Session s:map.keySet()){
+				if(map.get(s).getUsername().equals(mess.getRecipient()))
+					try {
+						s.getBasicRemote().sendText(exit);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}
+		}
+	}
+	@OnOpen
     public void onOpen(Session session) {
     	System.out.println("session open");
     }
