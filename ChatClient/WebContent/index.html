@@ -43,10 +43,14 @@ app.controller('formCtrl', function($scope) {
     $scope.user = {username: "", password: ""};
     $scope.master = {username: "", password: ""};
     $scope.login = function() {
-        $scope.user = angular.copy($scope.master);
+    	var message={username:$scope.user.username,password:$scope.user.password,type:"login",recipient:"",message:""};
+		var mess=JSON.stringify(message);
+		ws.send(mess);
     };
     $scope.register = function() {
-        $scope.user = angular.copy($scope.master);
+        var message={username:$scope.user.username,password:$scope.user.password,type:"register",recipient:"",message:""};
+		var mess=JSON.stringify(message);
+		ws.send(mess);
     };
     $scope.sendmessage = function() {
         var box=document.getElementById("chatbox");
@@ -60,7 +64,9 @@ app.controller('formCtrl', function($scope) {
     	ws.send(mess);
     };
     $scope.logout = function() {
-        $scope.user = angular.copy($scope.master);
+        var message={username:$scope.user.username,password:$scope.user.password,type:"logout",recipient:"",message:""};
+		var mess=JSON.stringify(message);
+		ws.send(mess);
     };
 	var ws = new WebSocket("ws://localhost:8080/ChatClient/socket");
     

@@ -7,10 +7,10 @@ import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -27,11 +27,14 @@ import exceptions.UsernameExistsException;
 
 /**
  * Message-Driven Bean implementation class for: User
- *//*
+ */
 @MessageDriven(
 		activationConfig = { @ActivationConfigProperty(
-				propertyName = "destinationType", propertyValue = "javax.jms.Queue")
-		})*/
+				propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+	    @ActivationConfigProperty(
+	    		propertyName  = "destination",
+	    			propertyValue = "queue/mojQueue") // Ext. JNDI Name
+		})
 public class UserApp implements MessageListener {
 	private ArrayList<User> registeredUsers;
     /**
@@ -40,6 +43,29 @@ public class UserApp implements MessageListener {
     public UserApp() {
         // TODO Auto-generated constructor stub
     	registeredUsers=new ArrayList<User>();
+    	/*try {
+			Context context = new InitialContext();
+			ConnectionFactory cf = (ConnectionFactory) context
+					.lookup("RemoteConnectionFactory");
+			final Queue queue = (Queue) context
+					.lookup("queue/mojQueue");
+			context.close();
+			Connection connection = cf.createConnection("guest", "guestguest");
+			final Session session = connection.createSession(false,
+					Session.AUTO_ACKNOWLEDGE);
+
+			connection.start();
+
+			MessageConsumer consumer = session.createConsumer(queue);
+			consumer.setMessageListener(this);
+
+		    
+			consumer.close();
+			connection.stop();
+		    
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}*/
     }
 	
 	/**
@@ -47,6 +73,19 @@ public class UserApp implements MessageListener {
      */
     public void onMessage(Message message) {
         // TODO Auto-generated method stub
+    	try {
+    		TextMessage tmsg = (TextMessage) message;
+    		try {
+    			String text = tmsg.getText();
+    			long time = tmsg.getLongProperty("sent");
+    			System.out.println("Received new message:" +
+    					text + ", with timestamp: " + time);
+    		} catch (JMSException e) {
+    			e.printStackTrace();
+    		}
+    		} catch (Exception e) {
+    			e.printStackTrace ();
+    		}
         
     }
     @POST
