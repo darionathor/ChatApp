@@ -40,7 +40,8 @@
 var app = angular.module('myApp', []);
 app.controller('formCtrl', function($scope) {
 	$scope.message="";
-    $scope.master = {username: "aa", password: "a"};
+    $scope.user = {username: "", password: ""};
+    $scope.master = {username: "", password: ""};
     $scope.login = function() {
         $scope.user = angular.copy($scope.master);
     };
@@ -53,7 +54,10 @@ app.controller('formCtrl', function($scope) {
         el.innerHTML=$scope.message;
         box.appendChild(el);
         console.log($scope.message);
-    	ws.send("Message to server from client");
+
+        var message={username:$scope.user.username,password:$scope.user.password,type:"message",recipient:"",message:$scope.message};
+		var mess=JSON.stringify(message);
+    	ws.send(mess);
     };
     $scope.logout = function() {
         $scope.user = angular.copy($scope.master);

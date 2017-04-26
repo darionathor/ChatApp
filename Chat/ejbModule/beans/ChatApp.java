@@ -36,7 +36,7 @@ public class ChatApp {
      * @see MessageListener#onMessage(Message)
      */
     @OnMessage
-    public void onMessage(Message message,Session session) {
+    public void onMessage(String message,Session session) {
         // TODO Auto-generated method stub
         
     }
