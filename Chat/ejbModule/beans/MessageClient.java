@@ -1,11 +1,13 @@
 package beans;
 
-public class Message {
+import java.io.Serializable;
+
+public class MessageClient implements Serializable{
 	private String username;
 	private String password;
 	private String type;
-	public Message(){};
-	public Message(String username, String password, String type,
+	public MessageClient(){};
+	public MessageClient(String username, String password, String type,
 			String message, String recipient) {
 		super();
 		this.username = username;

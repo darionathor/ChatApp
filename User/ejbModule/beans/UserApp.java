@@ -9,11 +9,10 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.ws.rs.GET;
@@ -37,12 +36,14 @@ import exceptions.UsernameExistsException;
 		})
 public class UserApp implements MessageListener {
 	private ArrayList<User> registeredUsers;
+	private ArrayList<User> loggedUsers;
     /**
      * Default constructor. 
      */
     public UserApp() {
         // TODO Auto-generated constructor stub
     	registeredUsers=new ArrayList<User>();
+    	loggedUsers=new ArrayList<User>();
     	/*try {
 			Context context = new InitialContext();
 			ConnectionFactory cf = (ConnectionFactory) context
@@ -74,12 +75,24 @@ public class UserApp implements MessageListener {
     public void onMessage(Message message) {
         // TODO Auto-generated method stub
     	try {
-    		TextMessage tmsg = (TextMessage) message;
+    		ObjectMessage tmsg = (ObjectMessage) message;
     		try {
-    			String text = tmsg.getText();
-    			long time = tmsg.getLongProperty("sent");
-    			System.out.println("Received new message:" +
-    					text + ", with timestamp: " + time);
+    			MessageClient mess= (MessageClient) tmsg.getObject();
+    			System.out.println(mess.getType()+" UserApp");
+    			if(mess.getType().equals("register")){
+    				register(mess.getUsername(),mess.getPassword());
+    			}else if(mess.getType().equals("login")){
+    				login(mess.getUsername(),mess.getPassword());
+    			}else if(mess.getType().equals("logout")){
+    				for(User user:registeredUsers){
+    					if(user.getUsername().equals(mess.getUsername()) && user.getPassword().equals(mess.getPassword())){
+    						logout(user);
+    						break;
+    					}
+    				}
+    			}
+    			
+    			
     		} catch (JMSException e) {
     			e.printStackTrace();
     		}
@@ -111,6 +124,42 @@ public class UserApp implements MessageListener {
     public Boolean login(String username, String password) throws InvalidCredentialsException {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(username) && us.getPassword().equals(password)){
+				loggedUsers.remove(us);
+				loggedUsers.add(us);
+				
+				Context context;
+				try {
+					context = new InitialContext();
+				
+	    		ConnectionFactory cf = (ConnectionFactory)
+	    				context.lookup("RemoteConnectionFactory");
+	    		final Topic queue = (Topic) context
+	    				.lookup("topic/mojTopic");
+
+	    		context.close();
+	    		Connection connection =
+	    		cf.createConnection("guest", "");
+	    		final javax.jms.Session session1 =
+	    		connection.createSession(false,
+	    		javax.jms.Session.AUTO_ACKNOWLEDGE);
+	    		connection.start();
+	    		MessageClient mess= new MessageClient(us.getUsername(),us.getPassword(),"login","","");
+						/*MessageConsumer consumer =
+	    				session1.createConsumer(queue);
+	    				consumer.setMessageListener(this);*/
+	    				ObjectMessage msg = session1.createObjectMessage(mess);
+
+	    				MessageProducer producer =
+	    				session1.createProducer(queue);
+	    				producer.send(msg);
+	    				producer.close();
+	    				connection.stop();
+	    				connection.close();
+	    		} catch (Exception e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    			}
+				
 				return true;
 			}
 		}
@@ -124,6 +173,41 @@ public class UserApp implements MessageListener {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(logout.getUsername()) && us.getPassword().equals(logout.getPassword())){
 				us.setHost(null);
+				loggedUsers.remove(us);
+				Context context;
+				try {
+					context = new InitialContext();
+				
+	    		ConnectionFactory cf = (ConnectionFactory)
+	    				context.lookup("RemoteConnectionFactory");
+	    		final Topic queue = (Topic) context
+	    				.lookup("topic/mojTopic");
+
+	    		context.close();
+	    		Connection connection =
+	    		cf.createConnection("guest", "");
+	    		final javax.jms.Session session1 =
+	    		connection.createSession(false,
+	    		javax.jms.Session.AUTO_ACKNOWLEDGE);
+	    		connection.start();
+	    		MessageClient mess= new MessageClient(us.getUsername(),us.getPassword(),"logout","","");
+						/*MessageConsumer consumer =
+	    				session1.createConsumer(queue);
+	    				consumer.setMessageListener(this);*/
+	    				ObjectMessage msg = session1.createObjectMessage(mess);
+
+	    				MessageProducer producer =
+	    				session1.createProducer(queue);
+	    				producer.send(msg);
+	    				producer.close();
+	    				connection.stop();
+	    				connection.close();
+	    		} catch (Exception e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    			}
+				
+				
 				return true;
 			}
 		}

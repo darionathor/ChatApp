@@ -34,11 +34,16 @@
         <input  type="text" ng-model="message" />
         <button ng-click="sendmessage()">send</button>
     </form>
+    <select id="selRec">
+		<option ng-repeat="x in names">{{x}}</option>
+	</select>
+</select>
 </div>
 
 <script>
 var app = angular.module('myApp', []);
 app.controller('formCtrl', function($scope) {
+	$scope.names=[""];
 	$scope.message="";
     $scope.user = {username: "", password: ""};
     $scope.master = {username: "", password: ""};
@@ -53,13 +58,14 @@ app.controller('formCtrl', function($scope) {
 		ws.send(mess);
     };
     $scope.sendmessage = function() {
-        var box=document.getElementById("chatbox");
+    	var box=document.getElementById("chatbox");
+        var selekt=document.getElementById("selRec");
         var el= document.createElement("p");
         el.innerHTML=$scope.message;
         box.appendChild(el);
         console.log($scope.message);
 
-        var message={username:$scope.user.username,password:$scope.user.password,type:"message",recipient:"",message:$scope.message};
+        var message={username:$scope.user.username,password:$scope.user.password,type:"message",recipient:selekt.options[selekt.selectedIndex].text,message:$scope.message};
 		var mess=JSON.stringify(message);
     	ws.send(mess);
     };
@@ -75,18 +81,26 @@ app.controller('formCtrl', function($scope) {
     };
     
     ws.onmessage = function(message) {
-        listener(JSON.parse(message.data));
+    	$scope.$apply(function() {
+        	 var data=JSON.parse(message.data);
+        console.log(data);
+        if(data.type==="message"){
+        	var box=document.getElementById("chatbox");
+            var el= document.createElement("p");
+            el.innerHTML=data.username+": "+data.message;
+            box.appendChild(el);
+        }else if(data.type==="newUser"){
+            if($scope.names.indexOf(data.username)===-1){
+                $scope.names.push(data.username);
+                }
+        }else if(data.type==="lostUser"){
+            if($scope.names.indexOf(data.username)!=-1){
+                $scope.names.splice($scope.names.indexOf(data.username),1);
+                }
+        }})
+        
+        
     };
-    function listener(data) {
-        var messageObj = data;
-        console.log("Received data from websocket: ", messageObj);
-        // If an object exists with callback_id in our callbacks object, resolve it
-        if(callbacks.hasOwnProperty(messageObj.callback_id)) {
-          console.log(callbacks[messageObj.callback_id]);
-          $rootScope.$apply(callbacks[messageObj.callback_id].cb.resolve(messageObj.data));
-          delete callbacks[messageObj.callbackID];
-        }
-      }
 });
 </script>
 
