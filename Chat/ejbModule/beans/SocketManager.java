@@ -289,8 +289,11 @@ public class SocketManager {
     		}
     	}
     }
-    private void publish(MessageClient mess) {
+    void publish(MessageClient mess) {
 		// TODO Auto-generated method stub
+    	if(data.main){
+    		data.publish(mess);
+    	}
     	if(mess.getRecipient().equals("")){
 			ObjectMapper om= new ObjectMapper();
 			String exit="";
@@ -334,6 +337,33 @@ public class SocketManager {
 					}
 			}
 		}
+    	if(!data.main){
+    		String uri =
+ 				    "http://localhost:8080/ChatClient/rest/publish";
+ 				URL url;
+				try {
+					url = new URL(uri);
+				
+ 				HttpURLConnection connection =
+ 				    (HttpURLConnection) url.openConnection();
+ 				connection.setDoOutput(true);
+ 				connection.setRequestMethod("POST");
+ 				connection.setRequestProperty("Content-Type", "application/json");
+ 				ObjectMapper om= new ObjectMapper();
+
+ 				OutputStream xml = connection.getOutputStream();
+ 				
+ 				String out= om.writeValueAsString(mess);
+ 				PrintWriter pw=new PrintWriter(xml);
+ 				pw.write(out);
+ 				
+ 				
+ 				connection.disconnect();
+				}catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    	}
 	}
 	@OnOpen
     public void onOpen(Session session) {

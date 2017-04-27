@@ -55,7 +55,7 @@ public class Rest {
 	}
 
     @POST
-    @Path("/logout")
+    @Path("/logout/")
     @Produces(MediaType.APPLICATION_JSON)
     public Boolean logout(User logout) {
     	return ua.logout(logout);

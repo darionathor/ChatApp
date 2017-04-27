@@ -53,19 +53,32 @@ public class RestManager {
     @POST
     @Path("/publish")
     @Consumes({"application/xml","application/json"})
-    public void publish(Message message) {
+    public void publish(MessageClient message) {
+    	System.out.println("publish");
+    	sm.publish(message);
 	}
-    @POST
-    @Path("/login")
-    @Consumes({"application/xml","application/json"})
-    public void login(User user) {
+    @GET
+    @Path("/login/{param1}/{param2}")
+    @Produces({"application/xml","application/json"})
+    public User login(@PathParam("param1") String address,@PathParam("param2") String alias) {
     	System.out.println("login attempted on sec server");
+    	User user= new User();
+    	user.setUsername(address);
+    	user.setPassword(alias);
+    	user.setHost(null);
     	sm.addUser(user);
-    	
-	} @Path("/logout")
-    @Consumes({"application/xml","application/json"})
-    public void logout(User user) {
+    	return user;
+	}
+    @GET
+    @Path("/logout/{param1}/{param2}")
+    @Produces({"application/xml","application/json"})
+    public User logout(@PathParam("param1") String address,@PathParam("param2")String alias) {
+    	System.out.println("login attempted on sec server");
+    	User user= new User();
+    	user.setUsername(address);
+    	user.setPassword(alias);
+    	user.setHost(null);
     	sm.removeUser(user);
-    	
+    	return user;
 	}
 }

@@ -1,5 +1,6 @@
 package beans;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -16,7 +17,9 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -148,7 +151,7 @@ public class ServerManager {
 		System.out.println(hostovi.size());
 		for(Host h:hostovi){
 			String uri =
- 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/login";
+ 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/login/"+user.getUsername()+"/"+user.getPassword();
 			System.out.println(uri);
 			System.out.println(user.getUsername()+user.getPassword());
  				URL url;
@@ -158,15 +161,13 @@ public class ServerManager {
  				HttpURLConnection connection =
  				    (HttpURLConnection) url.openConnection();
  				connection.setDoOutput(true);
- 				connection.setRequestMethod("POST");
- 				connection.setRequestProperty("Content-Type", "application/json");
- 				ObjectMapper om= new ObjectMapper();
+ 				connection.setRequestMethod("GET");
+  				connection.setRequestProperty("Accept", "application/json");
+  				
 
- 				OutputStream xml = connection.getOutputStream();
- 				
- 				String out= om.writeValueAsString(user);
- 				PrintWriter pw=new PrintWriter(xml);
- 				pw.write(out);
+  				InputStream xml = connection.getInputStream();
+  				ObjectMapper om= new ObjectMapper();
+				User useri=om.readValue(xml, new TypeReference<User>(){});
  				connection.disconnect();
 				}catch(Exception e){
 					e.printStackTrace();
@@ -178,24 +179,21 @@ public class ServerManager {
 		// TODO Auto-generated method stub
 		for(Host h:hostovi){
 			String uri =
- 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/logout/";
+ 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/logout/"+user.getUsername()+"/"+user.getPassword();
  				URL url;
 				try {
 					url = new URL(uri);
 				
  				HttpURLConnection connection =
  				    (HttpURLConnection) url.openConnection();
- 				connection.setRequestMethod("POST");
  				connection.setDoOutput(true);
- 				connection.setRequestMethod("POST");
- 				connection.setRequestProperty("Content-Type", "application/json");
- 				ObjectMapper om= new ObjectMapper();
+ 				connection.setRequestMethod("GET");
+  				connection.setRequestProperty("Accept", "application/json");
+  				
 
- 				OutputStream xml = connection.getOutputStream();
- 				
- 				String out= om.writeValueAsString(user);
- 				PrintWriter pw=new PrintWriter(xml);
- 				pw.write(out);
+  				InputStream xml = connection.getInputStream();
+  				ObjectMapper om= new ObjectMapper();
+				User useri=om.readValue(xml, new TypeReference<User>(){});
  				connection.disconnect();
 				}catch(Exception e){
 					e.printStackTrace();
@@ -257,6 +255,45 @@ public class ServerManager {
     				}
      		
     	}
+	}
+
+	public void publish(MessageClient mess) {
+		// TODO Auto-generated method stub
+			ObjectMapper om= new ObjectMapper();
+			String out="";
+			try {
+				out = om.writeValueAsString(mess);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		for(Host h:hostovi){
+			System.out.println(hostovi.size());
+			String uri =
+ 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/publish";
+			
+ 				URL url;
+				try {
+					url = new URL(uri);
+
+ 				HttpURLConnection connection =
+ 				    (HttpURLConnection) url.openConnection();
+ 				connection.setDoOutput(true);
+ 				connection.setRequestMethod("POST");
+ 				connection.setRequestProperty("Content-Type", "application/json");
+
+ 				OutputStream xml = connection.getOutputStream();
+ 				
+ 				PrintWriter pw=new PrintWriter(xml);
+ 				pw.write(out);
+ 				
+ 				
+ 				connection.disconnect();
+				}catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		};
 	}
 
 }
