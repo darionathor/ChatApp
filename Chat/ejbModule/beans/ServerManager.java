@@ -10,13 +10,11 @@ import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.Stateless;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.persistence.Entity;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,8 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Startup
 @Singleton
+@Entity
 public class ServerManager {
-	ArrayList<Host> hostovi;
+	ArrayList<Host> hostovi=new ArrayList<Host>();
+	ArrayList<User> useri;
 	boolean main;
 
     public boolean isMain() {
@@ -121,6 +121,20 @@ public class ServerManager {
  	    				System.out.println(hostovi.get(0).getAddress());
  	    				setHostovi(hostovi);
  	    				connection.disconnect();
+ 	    				
+ 	    				uri =
+ 	 	    				    "http://localhost:8080/UserRest/rest/registeredUsers";
+ 	 	    				url = new URL(uri);
+ 	 	    				connection =
+ 	 	    				    (HttpURLConnection) url.openConnection();
+ 	 	    				connection.setRequestMethod("GET");
+ 	 	    				connection.setRequestProperty("Accept", "application/json");
+ 	 	    				
+
+ 	 	    				xml = connection.getInputStream();
+ 	 	    				useri=om.readValue(xml, new TypeReference<ArrayList<User>>(){});
+ 	 	    				
+ 	 	    				connection.disconnect();
  	    		}
  			} catch (Exception e) {
  				// TODO Auto-generated catch block
@@ -128,5 +142,121 @@ public class ServerManager {
  			}
  
     }
+
+	public void addUser(User user) {
+		// TODO Auto-generated method stub
+		System.out.println(hostovi.size());
+		for(Host h:hostovi){
+			String uri =
+ 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/login";
+			System.out.println(uri);
+			System.out.println(user.getUsername()+user.getPassword());
+ 				URL url;
+				try {
+					url = new URL(uri);
+				
+ 				HttpURLConnection connection =
+ 				    (HttpURLConnection) url.openConnection();
+ 				connection.setDoOutput(true);
+ 				connection.setRequestMethod("POST");
+ 				connection.setRequestProperty("Content-Type", "application/json");
+ 				ObjectMapper om= new ObjectMapper();
+
+ 				OutputStream xml = connection.getOutputStream();
+ 				
+ 				String out= om.writeValueAsString(user);
+ 				PrintWriter pw=new PrintWriter(xml);
+ 				pw.write(out);
+ 				connection.disconnect();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+		};
+	}
+
+	public void removeUser(User user) {
+		// TODO Auto-generated method stub
+		for(Host h:hostovi){
+			String uri =
+ 				    "http://"+h.address+":"+h.alias+"/ChatClient/rest/logout/";
+ 				URL url;
+				try {
+					url = new URL(uri);
+				
+ 				HttpURLConnection connection =
+ 				    (HttpURLConnection) url.openConnection();
+ 				connection.setRequestMethod("POST");
+ 				connection.setDoOutput(true);
+ 				connection.setRequestMethod("POST");
+ 				connection.setRequestProperty("Content-Type", "application/json");
+ 				ObjectMapper om= new ObjectMapper();
+
+ 				OutputStream xml = connection.getOutputStream();
+ 				
+ 				String out= om.writeValueAsString(user);
+ 				PrintWriter pw=new PrintWriter(xml);
+ 				pw.write(out);
+ 				connection.disconnect();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+		};
+	}
+
+	public ArrayList<Host> register(String address, String alias) {
+		// TODO Auto-generated method stub
+		System.out.println(address);
+		System.out.println(alias);
+		ArrayList<Host> lista=getHostovi();//data.getHostovi();
+		Host e=new Host();
+		e.setAddress(address);
+		e.setAlias(alias);
+		for(Host h: lista){
+			if(h.getAddress().equals(address)&& h.getAlias().equals(alias)){
+				return lista;
+			}
+		}
+		lista.add(e);
+    	return lista;
+	}
+
+	public void unregister(Host host2) {
+		// TODO Auto-generated method stub
+		System.out.println("unregister");
+    	for(Host h:getHostovi()){
+    		if(h.getAddress().equals(host2.getAddress())&&h.getAlias().equals(host2.getAlias())){
+    			getHostovi().remove(h);
+    			break;
+    		}
+    	}
+    	if(main){
+     			String uri =
+     				    "http://localhost:8080/ChatClient/rest/unregister/";
+     				URL url;
+    				try {
+    					url = new URL(uri);
+    				
+     				HttpURLConnection connection =
+     				    (HttpURLConnection) url.openConnection();
+     				connection.setRequestMethod("POST");
+     				connection.setDoOutput(true);
+     				connection.setRequestProperty("Content-Type", "application/json");
+     				ObjectMapper om= new ObjectMapper();
+
+     				OutputStream xml = connection.getOutputStream();
+     				Host hst= new Host();
+     				hst.setAddress(host);
+     				hst.setAlias(port.toString());
+     				String out= om.writeValueAsString(hst);
+     				PrintWriter pw=new PrintWriter(xml);
+     				pw.write(out);
+     				connection.disconnect();
+    				}catch (Exception e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+     		
+    	}
+	}
 
 }

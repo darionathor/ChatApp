@@ -1,8 +1,13 @@
 package beans;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.inject.Inject;
 import javax.jms.JMSException;
@@ -11,6 +16,8 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exceptions.AliasExistsException;
 
@@ -28,6 +35,7 @@ public class ChatAplikacija implements MessageListener{
 
 	@Inject
 	SocketManager sm;
+	@EJB ServerManager data;
     /**
      * Default constructor. 
      */
@@ -46,10 +54,18 @@ public class ChatAplikacija implements MessageListener{
     }
     public void addUser(User user) {
     	sm.addUser(user);
+    	if(data.main){
+    		data.addUser(user);
+    		
+    	}
 	}
 
     public void removeUser(User user) {
     	sm.removeUser(user);
+    	if(data.main){
+    		data.removeUser(user);
+    		
+    	}
 	}
 
 	public void onMessage(Message message) {

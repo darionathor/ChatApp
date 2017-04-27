@@ -1,7 +1,13 @@
 package beans;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.ejb.LocalBean;
@@ -25,6 +31,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -61,7 +68,6 @@ public class SocketManager {
 	    		System.out.println(port);
 	    		if(!port.equals(8080)){
 	    			mainServer=false;
-	    			data.main=false;
 	    			System.out.println("secondary server");
 	    		}
 			} catch (Exception e) {
@@ -101,45 +107,88 @@ public class SocketManager {
     	if(mess.getType().equals("message")){
     		publish(mess);
     	}else if(mess.getType().equals("login")){
-    		User us= new User();
-    		us.setUsername(mess.getUsername());
-    		us.setPassword(mess.getPassword());
-    		pending.put(session, us);
-    		Context context;
-			try {
-				context = new InitialContext();
-			
-    		ConnectionFactory cf = (ConnectionFactory)
-    				context.lookup("RemoteConnectionFactory");
-    		final Queue queue = (Queue) context
-    				.lookup("queue/mojQueue");
-
-    		context.close();
-    		Connection connection =
-    		cf.createConnection("guest", "");
-    		final javax.jms.Session session1 =
-    		connection.createSession(false,
-    		javax.jms.Session.AUTO_ACKNOWLEDGE);
-    		connection.start();
-    		/*MessageConsumer consumer =
-    				session1.createConsumer(queue);
-    				consumer.setMessageListener(this);*/
-    				ObjectMessage msg = session1.createObjectMessage(mess);
-
-    				long sent = System.currentTimeMillis();
-
-    				msg.setLongProperty("sent", sent);
-
-    				MessageProducer producer =
-    				session1.createProducer(queue);
-    				producer.send(msg);
-    				producer.close();
-    				connection.stop();
-    				connection.close();
+			System.out.println(data.main);
+    		if(data.main){
+    			System.out.println("main");
+	    		User us= new User();
+	    		us.setUsername(mess.getUsername());
+	    		us.setPassword(mess.getPassword());
+	    		Host host= new Host();
+	    		host.setAddress(data.host);
+	    		host.setAlias(data.port.toString());
+	    		System.out.println(data.host+" data.host");	
+	    		us.setHost(host);
+	    		pending.put(session, us);
+	    		Context context;
+				try {
+					context = new InitialContext();
+				
+	    		ConnectionFactory cf = (ConnectionFactory)
+	    				context.lookup("RemoteConnectionFactory");
+	    		final Queue queue = (Queue) context
+	    				.lookup("queue/mojQueue");
+	
+	    		context.close();
+	    		Connection connection =
+	    		cf.createConnection("guest", "");
+	    		final javax.jms.Session session1 =
+	    		connection.createSession(false,
+	    		javax.jms.Session.AUTO_ACKNOWLEDGE);
+	    		connection.start();
+	    		/*MessageConsumer consumer =
+	    				session1.createConsumer(queue);
+	    				consumer.setMessageListener(this);*/
+	    				ObjectMessage msg = session1.createObjectMessage(mess);
+	
+	    				long sent = System.currentTimeMillis();
+	
+	    				msg.setLongProperty("sent", sent);
+	
+	    				MessageProducer producer =
+	    				session1.createProducer(queue);
+	    				producer.send(msg);
+	    				producer.close();
+	    				connection.stop();
+	    				connection.close();
+				
     		} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			}else{
+	    		User us= new User();
+	    		us.setUsername(mess.getUsername());
+	    		us.setPassword(mess.getPassword());
+	    		Host host= new Host();
+	    		host.setAddress(data.host);
+	    		host.setAlias(data.port.toString());
+	    		System.out.println(data.host+" data.host");	
+	    		us.setHost(host);
+	    		pending.put(session, us);
+					String uri =
+		 				    "http://localhost:8080/UserRest/rest/login/"+mess.getUsername()+"/"+mess.getPassword();
+		 				URL url;
+						try {
+							url = new URL(uri);
+						
+		 				HttpURLConnection connection =
+		 				    (HttpURLConnection) url.openConnection();
+		 					connection.setRequestMethod("GET");
+	 	    				connection.setRequestProperty("Accept", "text/plain");
+	 	    				ObjectMapper om= new ObjectMapper();
+
+
+	 	    				InputStream xml = connection.getInputStream();
+	 	    				String useri=om.readValue(xml, new TypeReference<String>(){});
+		 				
+		 				
+		 				connection.disconnect();
+						}catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
     	}else if(mess.getType().equals("logout")){
     		Context context;
     		
@@ -178,6 +227,7 @@ public class SocketManager {
 				e.printStackTrace();
 			}
     	}else if(mess.getType().equals("register")){
+    		if(data.main){
     		Context context;
 			try {
 				context = new InitialContext();
@@ -213,6 +263,30 @@ public class SocketManager {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+    		}else{
+    			String uri =
+	 				    "http://localhost:8080/UserRest/rest/register/"+mess.getUsername()+"/"+mess.getPassword();
+	 				URL url;
+					try {
+						url = new URL(uri);
+					
+	 				HttpURLConnection connection =
+	 				    (HttpURLConnection) url.openConnection();
+	 				
+	 				System.out.println("bloody register");
+	 				connection.setRequestMethod("GET");
+	    				connection.setRequestProperty("Accept", "application/json");
+	    				ObjectMapper om= new ObjectMapper();
+
+
+	    				InputStream xml = connection.getInputStream();
+	    				User useri=om.readValue(xml, new TypeReference<User>(){});
+	 				connection.disconnect();
+					}catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+    		}
     	}
     }
     private void publish(MessageClient mess) {

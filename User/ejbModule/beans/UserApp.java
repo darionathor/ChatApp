@@ -1,9 +1,9 @@
 package beans;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -35,17 +35,13 @@ import exceptions.UsernameExistsException;
 	    		propertyName  = "destination",
 	    			propertyValue = "queue/mojQueue") // Ext. JNDI Name
 		})
-@Path("/")
 public class UserApp implements MessageListener {
-	private ArrayList<User> registeredUsers;
-	private ArrayList<User> loggedUsers;
+	@EJB DataBean data;
     /**
      * Default constructor. 
      */
     public UserApp() {
         // TODO Auto-generated constructor stub
-    	registeredUsers=new ArrayList<User>();
-    	loggedUsers=new ArrayList<User>();
     	/*try {
 			Context context = new InitialContext();
 			ConnectionFactory cf = (ConnectionFactory) context
@@ -86,7 +82,7 @@ public class UserApp implements MessageListener {
     			}else if(mess.getType().equals("login")){
     				login(mess.getUsername(),mess.getPassword());
     			}else if(mess.getType().equals("logout")){
-    				for(User user:registeredUsers){
+    				for(User user:data.registeredUsers){
     					if(user.getUsername().equals(mess.getUsername()) && user.getPassword().equals(mess.getPassword())){
     						logout(user);
     						break;
@@ -104,10 +100,10 @@ public class UserApp implements MessageListener {
         
     }
     @POST
-    @Path("/register/{param1}")
+    @Path("/register/{param1}/{param2}")
     @Produces(MediaType.APPLICATION_JSON)
-    public User register(@PathParam("param1")String username, String password) throws UsernameExistsException {
-    	for(User us: registeredUsers){
+    public User register(@PathParam("param1")String username,@PathParam("param2") String password) throws UsernameExistsException {
+    	for(User us: data.registeredUsers){
 			if(us.getUsername().equals(username)){
 				throw new UsernameExistsException();
 			}
@@ -116,18 +112,18 @@ public class UserApp implements MessageListener {
     	user.setPassword(password);
     	user.setUsername(username);
     	user.setHost(null);
-    	registeredUsers.add(user);
+    	data.registeredUsers.add(user);
     	return user;
 	}
 
     @POST
-    @Path("/login/{param1}")
+    @Path("/login/{param1}/{param2}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Boolean login(@PathParam("param1") String username, String password) throws InvalidCredentialsException {
-    	for(User us: registeredUsers){
+    public Boolean login(@PathParam("param1") String username,@PathParam("param2")  String password) throws InvalidCredentialsException {
+    	for(User us: data.registeredUsers){
 			if(us.getUsername().equals(username) && us.getPassword().equals(password)){
-				loggedUsers.remove(us);
-				loggedUsers.add(us);
+				data.loggedUsers.remove(us);
+				data.loggedUsers.add(us);
 				
 				Context context;
 				try {
@@ -172,10 +168,10 @@ public class UserApp implements MessageListener {
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
     public Boolean logout(User logout) {
-    	for(User us: registeredUsers){
+    	for(User us: data.registeredUsers){
 			if(us.getUsername().equals(logout.getUsername()) && us.getPassword().equals(logout.getPassword())){
 				us.setHost(null);
-				loggedUsers.remove(us);
+				data.loggedUsers.remove(us);
 				Context context;
 				try {
 					context = new InitialContext();
@@ -220,6 +216,6 @@ public class UserApp implements MessageListener {
     @Path("/registeredUsers")
     @Produces(MediaType.APPLICATION_JSON)
     public List<User> getAllUsers() {
-		return registeredUsers;
+		return data.registeredUsers;
 	}
 }
