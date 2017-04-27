@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @LocalBean
 @ServerEndpoint(value="/socket")
 public class SocketManager {
+	@Inject Data data;
 	boolean mainServer;
 	HashMap<Session,User> map;
 	HashMap<Session,User> pending;
@@ -57,6 +59,7 @@ public class SocketManager {
 	    		System.out.println(port);
 	    		if(!port.equals(8080)){
 	    			mainServer=false;
+	    			data.main=false;
 	    			System.out.println("secondary server");
 	    		}
 			} catch (Exception e) {
