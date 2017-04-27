@@ -23,7 +23,9 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -36,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @LocalBean
 @ServerEndpoint(value="/socket")
 public class SocketManager {
-	@Inject Data data;
+	@Inject ServerManager data;
 	boolean mainServer;
 	HashMap<Session,User> map;
 	HashMap<Session,User> pending;
@@ -319,6 +321,14 @@ public class SocketManager {
 		for(Session s:pending.keySet()){
 			if(pending.get(s).getUsername().equals(user.getUsername())){
 				map.put(s, user);
+				String values;
+				try {
+					values = om.writeValueAsString(map.values());
+					s.getBasicRemote().sendText(values);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				pending.remove(s);
 				break;
 			}
