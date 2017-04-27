@@ -7,6 +7,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.jms.Message;
@@ -27,14 +29,18 @@ import exceptions.AliasExistsException;
  */
 @Startup
 @Singleton
-@Path("/rest/")
 public class ServerManager {
 
 	boolean mainServer;
     /**
      * Default constructor. 
      */
-	 
+	@PostConstruct
+    public void initialize() {
+    }
+    @PreDestroy
+    public void terminate() {
+    }
     public ServerManager() {
         // TODO Auto-generated constructor stub
     	
@@ -59,10 +65,10 @@ public class ServerManager {
  	    				connection.setRequestProperty("Accept", "application/xml");
  	    				
 
- 	    				JAXBContext jc = JAXBContext.newInstance(List.class);
+ 	    				JAXBContext jc = JAXBContext.newInstance(ArrayList.class);
  	    				InputStream xml = connection.getInputStream();
- 	    				List<Host> customer =
- 	    				    (List<Host>) jc.createUnmarshaller().unmarshal(xml);
+ 	    				ArrayList<Host> customer =
+ 	    				    (ArrayList<Host>) jc.createUnmarshaller().unmarshal(xml);
 
  	    				connection.disconnect();
  	    		}
@@ -72,24 +78,5 @@ public class ServerManager {
  			}
  
     }
-    @GET
-    @Path("/register/{param1}/{param2}")
-    @Produces({"application/xml","application/json"})
-    //@Consumes({"application/xml","application/json"})
-    public List<Host> register(@PathParam("param1") String address,@PathParam("param2") String alias) throws AliasExistsException {
-		System.out.println(address);
-		System.out.println(alias);
-    	return new ArrayList<Host>();
-	}
-
-    @POST
-    @Consumes({"application/xml","application/json"})
-    public void unregister(Host host) {
-	}
-
-    @POST
-    @Consumes({"application/xml","application/json"})
-    public void publish(Message message) {
-	}
 
 }

@@ -12,7 +12,6 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -25,6 +24,8 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 
 
 /**
@@ -219,6 +220,9 @@ public class SocketManager {
 			} catch (JsonProcessingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			for(Session s:map.keySet()){
 				if(!map.get(s).getUsername().equals(mess.getUsername()))
@@ -237,6 +241,9 @@ public class SocketManager {
 			} catch (JsonProcessingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			for(Session s:map.keySet()){
 				if(map.get(s).getUsername().equals(mess.getRecipient()))
@@ -302,7 +309,7 @@ public class SocketManager {
 		String exit="";
 		try {
 			exit = om.writeValueAsString(mc);
-		} catch (JsonProcessingException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -331,7 +338,7 @@ public class SocketManager {
 		String exit="";
 		try {
 			exit = om.writeValueAsString(mc);
-		} catch (JsonProcessingException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}

@@ -18,6 +18,7 @@ import javax.naming.InitialContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -34,6 +35,7 @@ import exceptions.UsernameExistsException;
 	    		propertyName  = "destination",
 	    			propertyValue = "queue/mojQueue") // Ext. JNDI Name
 		})
+@Path("/")
 public class UserApp implements MessageListener {
 	private ArrayList<User> registeredUsers;
 	private ArrayList<User> loggedUsers;
@@ -102,9 +104,9 @@ public class UserApp implements MessageListener {
         
     }
     @POST
-    @Path("/register")
+    @Path("/register/{param1}")
     @Produces(MediaType.APPLICATION_JSON)
-    public User register(String username, String password) throws UsernameExistsException {
+    public User register(@PathParam("param1")String username, String password) throws UsernameExistsException {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(username)){
 				throw new UsernameExistsException();
@@ -119,9 +121,9 @@ public class UserApp implements MessageListener {
 	}
 
     @POST
-    @Path("/login")
+    @Path("/login/{param1}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Boolean login(String username, String password) throws InvalidCredentialsException {
+    public Boolean login(@PathParam("param1") String username, String password) throws InvalidCredentialsException {
     	for(User us: registeredUsers){
 			if(us.getUsername().equals(username) && us.getPassword().equals(password)){
 				loggedUsers.remove(us);
