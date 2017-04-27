@@ -1,6 +1,7 @@
 package beans;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
 import javax.ejb.LocalBean;
@@ -10,6 +11,9 @@ import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.websocket.CloseReason;
@@ -30,16 +34,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @LocalBean
 @ServerEndpoint(value="/socket")
 public class SocketManager {
-
+	boolean mainServer;
 	HashMap<Session,User> map;
 	HashMap<Session,User> pending;
     /**
      * Default constructor. 
      */
     public SocketManager() {
+    	mainServer=true;
     		map=new HashMap<Session, User>();
     		pending=new HashMap<Session, User>();
         // TODO Auto-generated constructor stub
+    		MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+    		ObjectName socketBindingMBean;
+			try {
+				socketBindingMBean = new ObjectName("jboss.as:socket-binding-group=standard-sockets,socket-binding=http");
+
+	    		String  host = (String)  mBeanServer.getAttribute(socketBindingMBean, "boundAddress");
+	    		Integer port = (Integer) mBeanServer.getAttribute(socketBindingMBean, "boundPort");
+	    		System.out.println(host);
+	    		System.out.println(port);
+	    		if(!port.equals(8080)){
+	    			mainServer=false;
+	    			System.out.println("secondary server");
+	    		}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+    		System.out.println("SM started");
     }
     @OnMessage
     public void onMessage(String message,Session session) {

@@ -74,7 +74,10 @@ app.controller('formCtrl', function($scope) {
 		var mess=JSON.stringify(message);
 		ws.send(mess);
     };
-	var ws = new WebSocket("ws://localhost:8080/ChatClient/socket");
+    var address=window.location.href;
+    address=address.substring(4, address.length)
+    console.log(address);
+	var ws = new WebSocket("ws"+address+"socket");
     
     ws.onopen = function(){  
         console.log("Socket has been opened!");  

@@ -33,6 +33,7 @@ public class ChatAplikacija implements MessageListener{
      */
     public ChatAplikacija() {
         // TODO Auto-generated constructor stub
+    	System.out.println("CA started");
     }
 	
 	/**
@@ -43,20 +44,12 @@ public class ChatAplikacija implements MessageListener{
     public void onOpen(Session session) {
     	System.out.println("session open");
     }
-    public List<Host> register(String address, String alias) throws AliasExistsException {
-		return null;
-	}
-
-    public void unregister(Host host) {
-	}
     public void addUser(User user) {
     	sm.addUser(user);
 	}
 
     public void removeUser(User user) {
     	sm.removeUser(user);
-	}
-    public void publish(Message message) {
 	}
 
 	public void onMessage(Message message) {
