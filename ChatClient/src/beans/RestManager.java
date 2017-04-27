@@ -1,5 +1,9 @@
 package beans;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +16,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exceptions.AliasExistsException;
 
@@ -58,7 +64,33 @@ public class RestManager {
     		}
     	}
     	if(data.main){
-    		
+     			String uri =
+     				    "http://localhost:8080/ChatClient/rest/unregister/";
+     				URL url;
+    				try {
+    					url = new URL(uri);
+    				
+     				HttpURLConnection connection =
+     				    (HttpURLConnection) url.openConnection();
+     				connection.setRequestMethod("POST");
+     				connection.setDoOutput(true);
+     				connection.setRequestMethod("POST");
+     				connection.setRequestProperty("Content-Type", "application/json");
+     				ObjectMapper om= new ObjectMapper();
+
+     				OutputStream xml = connection.getOutputStream();
+     				Host hst= new Host();
+     				hst.setAddress(data.host);
+     				hst.setAlias(data.port.toString());
+     				String out= om.writeValueAsString(hst);
+     				PrintWriter pw=new PrintWriter(xml);
+     				pw.write(out);
+     				connection.disconnect();
+    				}catch (Exception e) {
+    					// TODO Auto-generated catch block
+    					e.printStackTrace();
+    				}
+     		
     	}
 	}
 
